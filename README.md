@@ -20,7 +20,7 @@ or just various packages, or just making changes to your $VIMRC file.
 * [ ] Split config to multiple files
 * [ ] Allow usage of command options for shorter syntax
 * [ ] Export every configuration to the $PATH so that you can call as a separate command or alias
-* [ ] Split source code into modules compiled to a single script to keep it clean
+* [x] Split source code into modules compiled to a single script to keep it clean
 * [ ] Allow usage of multiple versions of Vim/Neovim simultaneously
 * [ ] Keep all the environment variables in a separate configuration file
 * [ ] Installation script

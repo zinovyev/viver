@@ -1,10 +1,10 @@
-# /usr/bin/env bash
-
 # Viver is a simple configuratoin manager for Vim and Neovim written in Bash.
 # See the usage examples here: https://github.com/zinovyev/viver
 
 # The root dir where all the Vim/Neovim setups will be stored to.
 MAIN_CONFIGURATION_PATH="$HOME/.config/viver"
+SHIMS_PATH="${MAIN_CONFIGURATION_PATH}/bin"
+SETUPS_PATH="${MAIN_CONFIGURATION_PATH}/setups"
 
 # Vim and Neovim bin paths
 VIM_BIN_PATH="/usr/bin/vim"
@@ -43,10 +43,11 @@ function main() {
   declare -A current_config
 
   print_about
-  initialize_viver
+  initialize_main
   main_menu "${editor_options}"
 }
 
+# Print the about info on the first load
 function print_about() {
   cat <<-EOF
 
@@ -56,3 +57,8 @@ See the usage examples here: https://github.com/zinovyev/viver
 EOF
 }
 
+# Initialize main configuration paths
+function initialize_main() {
+  mkdir -p  $SHIMS_PATH
+  mkdir -p  $SETUPS_PATH
+}

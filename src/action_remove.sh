@@ -1,3 +1,4 @@
+# Remove particular configuration by name
 function action_remove() {
   echo "Remove configuration"
 
@@ -8,8 +9,7 @@ function action_remove() {
     if [[ "${config_name}" == "" ]]; then continue; fi
     if [[ "${config_name}" == "Q" ]] || [[ "${config_name}" == "q" ]]; then return; fi
 
-    config_path="${MAIN_CONFIGURATION_PATH}/${config_name}"
-    parse_config $config_path
+    parse_config "${config_name}"
 
     if [[ ! "${current_config[name]}" == "" ]]; then
       remove_configuration_menu
@@ -32,6 +32,7 @@ function remove_configuration_menu() {
       "Y"|"y")
         echo "Removing \"${current_config[name]}\"...\n"
         rm -rf "${current_config[full_path]}"
+        rm "${current_config[shim_path]}"
 
         break
         ;;

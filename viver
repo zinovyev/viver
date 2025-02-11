@@ -1,33 +1,18 @@
-# /usr/bin/env bash
+#! /usr/bin/env bash
 
-# Viver is a simple configuratoin manager for Vim and Neovim written in Bash.
-# See the usage examples here: https://github.com/zinovyev/viver
-
-# The root dir where all the Vim/Neovim setups will be stored to.
 MAIN_CONFIGURATION_PATH="$HOME/.config/viver"
+SHIMS_PATH="${MAIN_CONFIGURATION_PATH}/bin"
+SETUPS_PATH="${MAIN_CONFIGURATION_PATH}/setups"
 
-# Vim and Neovim bin paths
 VIM_BIN_PATH="/usr/bin/vim"
 NVIM_BIN_PATH="/usr/bin/nvim"
 
-# Runtime paths for Vim
-#
-# Variables:
-#
-# $VIM - /usr/share/vim
-# $VIMRUNTIME - /usr/share/vim/vim91
 DEFAULT_VIM_RUNTIME_PATHS=(
   "\\\$VIM/vimfiles"
   "\\\$VIMRUNTIME"
   "\\\$VIM/vimfiles/after"
 )
 
-# Runtime paths for Nvim
-#
-# Variables:
-#
-# $VIM - /usr/share/vim
-# $VIMRUNTIME - /usr/share/vim/runtime
 DEFAULT_NVIM_RUNTIME_PATHS=(
   "/usr/local/share/nvim/site"
   "\\\$VIM/site"
@@ -43,7 +28,7 @@ function main() {
   declare -A current_config
 
   print_about
-  initialize_viver
+  initialize_main
   main_menu "${editor_options}"
 }
 
@@ -56,6 +41,10 @@ See the usage examples here: https://github.com/zinovyev/viver
 EOF
 }
 
+function initialize_main() {
+  mkdir -p  $SHIMS_PATH
+  mkdir -p  $SETUPS_PATH
+}
 function main_menu() {
   editor_options=$1
 
@@ -79,6 +68,9 @@ function main_menu() {
       "L"|"l")
         action_list
         ;;
+      "T"|"t")
+        action_debug
+        ;;
       "Q"|"q")
         exit 0
         ;;
@@ -96,11 +88,11 @@ function print_main_menu() {
 [N]ew          Create a new configuration
 [R]emove       Remove existing configuration
 [L]ist         List available configurations
+[T]est         Print out what the execute command is going to execute for a particular configuration
 [Q]uit         Quit
 
 EOF
 }
-
 function action_execute() {
   editor_options=$1
 
@@ -114,13 +106,12 @@ function action_execute() {
     if [[ "${config_name}" == "" ]]; then continue; fi
     if [[ "${config_name}" == "Q" ]] || [[ "${config_name}" == "q" ]]; then return; fi
 
-    config_path="${MAIN_CONFIGURATION_PATH}/${config_name}"
-    parse_config $config_path
+    parse_config "${config_name}"
 
     if [[ ! "${current_config[name]}" == "" ]]; then
       print_config 
 
-      cmd="$(build_command ${current_config[editor]} "${editor_options}" ${current_config[name]})"
+      cmd="$(build_command "${editor_options}")"
 
       bash -c "${cmd}"
 
@@ -136,11 +127,9 @@ function action_list() {
   echo
   get_user_input
 }
-
 function action_new() {
   select_editor_menu
 
-  # Choosing the configuration name
   config_name=
   config_path=
   while :
@@ -148,14 +137,25 @@ function action_new() {
     config_name="$(get_user_input "Please set the config name: ")"
     if [[ "${config_name}" == "" ]]; then continue; fi
 
-    config_path="${MAIN_CONFIGURATION_PATH}/${config_name}"
+    config_path="${SETUPS_PATH}/${config_name}"
+
+    if [[ -e "$config_path" ]]; then
+      echo "Path \"${config_path}\" already exists. Try another name"
+      continue
+    fi
+
     break
   done
 
-  # Choosing an editor
   ensure_file_exists "${config_path}/.editor" $editor_name
   ensure_file_exists "${config_path}/init.vim"
   ensure_file_exists "${config_path}/.viminfo"
+
+  parse_config "${config_name}"
+  cmd="$(build_command "\$@")"
+
+  echo $cmd > "${current_config[shim_path]}"
+  chmod +x "${current_config[shim_path]}"
 }
 
 function select_editor_menu() {
@@ -206,8 +206,7 @@ function action_remove() {
     if [[ "${config_name}" == "" ]]; then continue; fi
     if [[ "${config_name}" == "Q" ]] || [[ "${config_name}" == "q" ]]; then return; fi
 
-    config_path="${MAIN_CONFIGURATION_PATH}/${config_name}"
-    parse_config $config_path
+    parse_config "${config_name}"
 
     if [[ ! "${current_config[name]}" == "" ]]; then
       remove_configuration_menu
@@ -230,6 +229,7 @@ function remove_configuration_menu() {
       "Y"|"y")
         echo "Removing \"${current_config[name]}\"...\n"
         rm -rf "${current_config[full_path]}"
+        rm "${current_config[shim_path]}"
 
         break
         ;;
@@ -252,47 +252,40 @@ function print_configuration_menu() {
 
 EOF
 }
-# Build vim/nvim command path
-function build_command() {
-  editor_name=$1
-  editor_options=$2
-  config_name=$3
-  editor_bin_path=
+function action_debug() {
+  editor_options=$1
 
-  # Setting the editor path and the config path
-  case $editor_name in 
-    "vim")
-      editor_bin_path="${VIM_BIN_PATH}"
-      ;;
-    "nvim")
-      editor_bin_path="${NVIM_BIN_PATH}"
-      ;;
-    *) raise_error "Invalid "${editor_bin_path}" editor name \"${1}\"" ;; 
-  esac
+  echo "Debug the editor command"
 
-  # Compile the full command line
-  cmd="${editor_bin_path} ${editor_options}"
-  if [[ ! "$config_name" == "" ]]; then
-    config_path="${MAIN_CONFIGURATION_PATH}/${config_name}"
-    runtime_path=$(build_runtime_path "${editor_name}" "${config_path}")
-    ensure_file_exists "${config_path}/init.vim"
-    ensure_file_exists "${config_path}/.viminfo"
-    runtime_path_cmd="--cmd \"set nocp\" "
-    runtime_path_cmd+="--cmd \"set runtimepath=${runtime_path}\" "
-    runtime_path_cmd+="--cmd \"set packpath=${runtime_path}\" "
-    runtime_path_cmd+="--cmd \"set viminfofile=${config_path}/.viminfofile\""
+  while :
+  do
+    list_configurations
 
-    cmd="export MYVIMRC=${config_path}/init.vim ; ${cmd} -u ${config_path}/init.vim ${runtime_path_cmd}"
-  fi
+    config_name="$(get_user_input "Please choose a name to execute (or [Q] to go back): ")"
+    if [[ "${config_name}" == "" ]]; then continue; fi
+    if [[ "${config_name}" == "Q" ]] || [[ "${config_name}" == "q" ]]; then return; fi
 
-  echo $cmd
+    parse_config "${config_name}"
+
+    if [[ ! "${current_config[name]}" == "" ]]; then
+      print_config 
+
+      cmd="$(build_command "${editor_options}")"
+
+      echo $cmd
+      echo
+
+      break
+    fi
+  done
 }
 
 function list_configurations() {
-  configurations=($(find $MAIN_CONFIGURATION_PATH -mindepth 1 -maxdepth 1 -type d))
+  configurations=($(find $SETUPS_PATH -mindepth 1 -maxdepth 1 -type d))
 
   for idx in ${!configurations[@]}; do
-    parse_config ${configurations[$idx]}
+    config_name=$(basename "${configurations[$idx]}")
+    parse_config "${config_name}"
     print_config
   done
 }
@@ -307,16 +300,33 @@ function print_config() {
 }
 
 function parse_config() {
-  config_path=$1
+  config_name=$1
+  config_path="${SETUPS_PATH}/${config_name}"
+  editor_name=$(cat "${config_path}/.editor")
+
   current_config[full_path]=$config_path
   current_config[name]=$(basename $config_path)
-  current_config[editor]=$(cat "${config_path}/.editor")
+  current_config[editor]=$editor_name
   current_config[init_path]="${config_path}/init.vim"
-  current_config[viminfo_path]="${config_path}/.viminfo"
-  current_config[runtime_path]=$(build_runtime_path ${current_config[editor]} $config_path)
+  current_config[viminfo_path]="${config_path}/.viminfofile"
+  current_config[runtime_path]=$(build_runtime_path $editor_name $config_path)
+  current_config[bin_path]=$(choose_editor_bin_path $editor_name)
+  current_config[shim_path]="${SHIMS_PATH}/${config_name}"
 }
 
-# Build the list of paths for the runtime dirs based on the editor name
+function build_command() {
+  editor_options=$1
+
+  cmd="${current_config[bin_path]} ${editor_options}"
+  ensure_file_exists "${current_config[init_path]}"
+  runtime_path_cmd="--cmd \"set nocp\" "
+  runtime_path_cmd+="--cmd \"set runtimepath=${current_config[runtime_path]}\" "
+  runtime_path_cmd+="--cmd \"set packpath=${current_config[runtime_path]}\" "
+  runtime_path_cmd+="--cmd \"set viminfofile=${current_config[viminfo_path]}\""
+
+  echo "export MYVIMRC=${current_config[init_path]} ; ${cmd} -u ${current_config[init_path]} ${runtime_path_cmd}"
+}
+
 function build_runtime_path() {
   editor_name=$1
   config_path=$2
@@ -336,18 +346,28 @@ function build_runtime_path() {
   echo "${config_path},${default_runtime_paths},${config_path}/after"
 }
 
+function choose_editor_bin_path() {
+  editor_name=$1
+
+  case $editor_name in 
+    "vim")
+      editor_bin_path="${VIM_BIN_PATH}"
+      ;;
+    "nvim")
+      editor_bin_path="${NVIM_BIN_PATH}"
+      ;;
+    *) raise_error "Invalid "${editor_bin_path}" editor name \"${1}\"" ;; 
+  esac
+
+  echo "$editor_bin_path"
+}
 function ensure_file_exists() {
   if [[ "$1" == "" ]]; then raise_error "File path is not defined!"; fi
   if [ ! -e "$1" ]; then
     install -D <(echo $2) $1
   fi
 }
- 
-function initialize_viver() {
-  mkdir -p  $MAIN_CONFIGURATION_PATH
-}
 
-# Raise an error and shutdown immediately
 function raise_error() {
   echo $1
 

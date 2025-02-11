@@ -1,3 +1,4 @@
+# Initialize a new setup
 function action_new() {
   select_editor_menu
 
@@ -9,7 +10,13 @@ function action_new() {
     config_name="$(get_user_input "Please set the config name: ")"
     if [[ "${config_name}" == "" ]]; then continue; fi
 
-    config_path="${MAIN_CONFIGURATION_PATH}/${config_name}"
+    config_path="${SETUPS_PATH}/${config_name}"
+
+    if [[ -e "$config_path" ]]; then
+      echo "Path \"${config_path}\" already exists. Try another name"
+      continue
+    fi
+
     break
   done
 
@@ -17,8 +24,16 @@ function action_new() {
   ensure_file_exists "${config_path}/.editor" $editor_name
   ensure_file_exists "${config_path}/init.vim"
   ensure_file_exists "${config_path}/.viminfo"
+
+  # Building a shim
+  parse_config "${config_name}"
+  cmd="$(build_command "\$@")"
+
+  echo $cmd > "${current_config[shim_path]}"
+  chmod +x "${current_config[shim_path]}"
 }
 
+# Select Vim or Nvim editor
 function select_editor_menu() {
   print_select_editor_menu
 

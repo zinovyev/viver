@@ -1,3 +1,4 @@
+# List all known setups
 function action_list() {
   echo -e "\nKnown configurations:\n"
 
@@ -6,4 +7,3 @@ function action_list() {
   echo
   get_user_input
 }
-

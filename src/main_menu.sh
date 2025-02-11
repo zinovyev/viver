@@ -1,3 +1,4 @@
+# The core main menu functionality
 function main_menu() {
   editor_options=$1
 
@@ -21,6 +22,9 @@ function main_menu() {
       "L"|"l")
         action_list
         ;;
+      "T"|"t")
+        action_debug
+        ;;
       "Q"|"q")
         exit 0
         ;;
@@ -38,8 +42,8 @@ function print_main_menu() {
 [N]ew          Create a new configuration
 [R]emove       Remove existing configuration
 [L]ist         List available configurations
+[T]est         Print out what the execute command is going to execute for a particular configuration
 [Q]uit         Quit
 
 EOF
 }
-

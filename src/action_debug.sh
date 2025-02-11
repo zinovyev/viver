@@ -1,8 +1,8 @@
 # Run a particular vim setup
-function action_execute() {
+function action_debug() {
   editor_options=$1
 
-  echo "Execute the editor command"
+  echo "Debug the editor command"
 
   while :
   do
@@ -19,7 +19,8 @@ function action_execute() {
 
       cmd="$(build_command "${editor_options}")"
 
-      bash -c "${cmd}"
+      echo $cmd
+      echo
 
       break
     fi

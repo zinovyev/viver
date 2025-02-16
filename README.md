@@ -10,14 +10,18 @@ With Viver, you can:
 - Create, remove, or execute configurations easily.
 - Work with distinct sets of plugins or settings without interference.
 
-### Why Use Viver?
-
 Unlike simply switching between `.vimrc` files, Viver also isolates runtime files and history, allowing for:
 
 - **Safe Updates**: Backup configurations before making changes to enable easy rollbacks.
 - **Multiple Configurations**: Use different plugin managers, plugin sets, and histories in parallel.
 
 ## Getting Started
+
+### Installation
+
+```bash
+sudo bash -c 'curl -L https://raw.githubusercontent.com/zinovyev/viver/refs/heads/master/viver -o /usr/bin/viver ; chmod +x /usr/bin/viver'
+```
 
 ### Creating a New Configuration
 
@@ -84,12 +88,3 @@ To install `vim-plug` for an isolated configuration:
 
    call plug#end()
    ```
-
-## Roadmap
-
--
-
----
-
-Viver simplifies Vim/Neovim configuration management, making experimentation and environment switching effortless. Contributions and feedback are welcome!
-

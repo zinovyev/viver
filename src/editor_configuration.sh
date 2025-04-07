@@ -52,7 +52,8 @@ function build_command() {
   runtime_path_cmd+="--cmd \"set packpath=${current_config[runtime_path]}\" "
   runtime_path_cmd+="--cmd \"set viminfofile=${current_config[viminfo_path]}\""
 
-  echo "export MYVIMRC=${current_config[init_path]} ; ${cmd} -u ${current_config[init_path]} ${runtime_path_cmd}"
+  echo "export MYVIMHOME=${current_config[full_path]} export MYVIMRC=${current_config[init_path]} ; " \
+    "${cmd} -u ${current_config[init_path]} ${runtime_path_cmd}"
 }
 
 # Build the list of paths for the runtime dirs based on the editor name

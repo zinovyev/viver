@@ -36,13 +36,15 @@ sudo bash -c 'curl -L https://raw.githubusercontent.com/zinovyev/viver/refs/head
    [Q]uit        Quit
    ```
 3. Choose between a Neovim (`N`) or Vim (`V`) configuration:
+
    ```
    [V]im         /usr/bin/vim
    [N]eovim      /usr/bin/nvim
    [Q]uit        Go back
 
-   Please choose an editor: N 
+   Please choose an editor: N
    ```
+
 4. Provide a meaningful name for your configuration:
    ```
    Please set the config name: neotest
@@ -70,21 +72,45 @@ Now you can run your configuration like a regular command:
 neotest .
 ```
 
-### Installing `vim-plug`
+### Customizing your vimrc init file
+
+When creating a setup with viver, the following ENV variables are available from the beginnig:
+
+- `$MYVIMRC` - The path to the main init file for your configuration (usually: `${MYVIMHOME/vim.init`)
+- `$MYVIMHOME` - The setup home directory
+
+I had to perform some extra steps to make the following integrations work properly so far.
+Everything besides that worked without any changes required.
+
+- [vim-plug](https://github.com/junegunn/vim-plug)
+- [coc](https://github.com/neoclide/coc.nvim)
+
+#### Configuring with isolated `vim-plug`
 
 To install `vim-plug` for an isolated configuration:
 
 1. Download `vim-plug` (replace `<your_setup_name>` with your setup name):
    ```bash
    curl -fLo ~/.config/viver/setups/<your_setup_name>/autoload/plug.vim --create-dirs \
-        https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+       https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
    ```
 2. Add this to the top of your `init.vim` file:
+
    ```vim
-   call plug#begin("~/.config/viver/<your_setup_name>/code/plugged")
+   OR call plug#begin("${MYVIMHOME}/plugged")
+   " OR call plug#begin("~/.config/viver/<your_setup_name>/plugged")
 
    " List your plugins here
    Plug 'tpope/vim-sensible'
 
    call plug#end()
    ```
+
+#### Configuring with isolated `COC`
+
+1. See the installation steps here
+2. Place the following somewhere to your $NVIMRC (`~/.config/viver/<your_setup_name>/init.vim`) file:
+   ```vim
+   let g:coc_config_home = "$MYVIMHOME"
+   ```
+3. Now the COC configuration file will be loaded from `$MYVIMHOME/coc-settings.json`

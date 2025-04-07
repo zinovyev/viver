@@ -97,7 +97,7 @@ To install `vim-plug` for an isolated configuration:
 2. Add this to the top of your `init.vim` file:
 
    ```vim
-   OR call plug#begin("${MYVIMHOME}/plugged")
+   OR call plug#begin($MYVIMHOME . "/plugged")
    " OR call plug#begin("~/.config/viver/<your_setup_name>/plugged")
 
    " List your plugins here
@@ -111,6 +111,6 @@ To install `vim-plug` for an isolated configuration:
 1. See the installation steps here
 2. Place the following somewhere to your $NVIMRC (`~/.config/viver/<your_setup_name>/init.vim`) file:
    ```vim
-   let g:coc_config_home = "$MYVIMHOME"
+   let g:coc_config_home = $MYVIMHOME
    ```
 3. Now the COC configuration file will be loaded from `$MYVIMHOME/coc-settings.json`

@@ -13,6 +13,8 @@ action_list:
 	cat ./src/action_list.sh | sed '/^\s*#/d' >> ./viver
 action_new:
 	cat ./src/action_new.sh | sed '/^\s*#/d' >> ./viver
+action_new:
+	cat ./src/action_install.sh | sed '/^\s*#/d' >> ./viver
 action_remove:
 	cat ./src/action_remove.sh | sed '/^\s*#/d' >> ./viver
 action_debug:

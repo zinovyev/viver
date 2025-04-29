@@ -68,6 +68,9 @@ function main_menu() {
       "L"|"l")
         action_list
         ;;
+      "I"|"i")
+        action_install
+        ;;
       "T"|"t")
         action_debug
         ;;
@@ -88,6 +91,7 @@ function print_main_menu() {
 [N]ew          Create a new configuration
 [R]emove       Remove existing configuration
 [L]ist         List available configurations
+[I]nstall      Install configuration from a git repository
 [T]est         Print out what the execute command is going to execute for a particular configuration
 [Q]uit         Quit
 
@@ -127,9 +131,7 @@ function action_list() {
   echo
   get_user_input
 }
-function action_new() {
-  select_editor_menu
-
+function action_install() {
   config_name=
   config_path=
   while :
@@ -147,54 +149,25 @@ function action_new() {
     break
   done
 
-  ensure_file_exists "${config_path}/.editor" $editor_name
-  ensure_file_exists "${config_path}/init.vim"
-  ensure_file_exists "${config_path}/.viminfo"
+  config_source=
+  while :
+  do
+    config_source="$(get_user_input "Please specify a git source location (https://github.com/<user>/<repo>.git): ")"
+    if [[ "${config_source}" == "" ]]; then continue; fi
+
+    break
+  done
+
+  git clone "${config_source}" "${config_path}"
+  if [[ $? -ne 0 ]]; then
+    raise_error "Couldn't clone the repository \"${config_source}\" to ${config_path}"
+  fi
 
   parse_config "${config_name}"
   cmd="$(build_command "\$@")"
 
   echo $cmd > "${current_config[shim_path]}"
   chmod +x "${current_config[shim_path]}"
-}
-
-function select_editor_menu() {
-  print_select_editor_menu
-
-  editor_name=
-  while :
-  do
-    user_input="$(get_user_input "Please choose an editor: ")"
-    if [[ "${user_input}" == "" ]]; then continue; fi
-
-    case $user_input in 
-      "V"|"v")
-        editor_name="vim"
-        break
-        ;;
-      "N"|"n")
-        editor_name="nvim"
-        break
-        ;;
-      "Q"|"q")
-        return
-        ;;
-
-      *) 
-        echo "Unknown editor: \"${user_input}\"" 
-        ;; 
-    esac
-  done
-}
-
-function print_select_editor_menu() {
-  cat <<-EOF
-
-[V]im          ${VIM_BIN_PATH}
-[N]eovim       ${NVIM_BIN_PATH}
-[Q]uit         To go back
-
-EOF
 }
 function action_remove() {
   echo "Remove configuration"

@@ -52,6 +52,12 @@ sudo bash -c 'curl -L https://raw.githubusercontent.com/zinovyev/viver/refs/head
 5. Your new configuration will be created under `~/.config/viver/setups/neotest`.
 6. You can now **list** (`L`), **remove** (`R`), or **execute** (`E`) configurations from the main menu.
 
+### Cloning an existing configuration
+
+1. Select **I** (`Install`) option
+2. Define the local name for new configuration
+3. Define the source repository path
+
 ### Making a Configuration Executable
 
 To make configurations executable, add the following to your `.bashrc` or `.zshrc`:

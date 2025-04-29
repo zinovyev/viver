@@ -22,6 +22,9 @@ function main_menu() {
       "L"|"l")
         action_list
         ;;
+      "I"|"i")
+        action_install
+        ;;
       "T"|"t")
         action_debug
         ;;
@@ -42,6 +45,7 @@ function print_main_menu() {
 [N]ew          Create a new configuration
 [R]emove       Remove existing configuration
 [L]ist         List available configurations
+[I]nstall      Install configuration from a git repository
 [T]est         Print out what the execute command is going to execute for a particular configuration
 [Q]uit         Quit
 

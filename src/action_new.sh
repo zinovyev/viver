@@ -1,6 +1,9 @@
 # Initialize a new setup
 function action_new() {
   select_editor_menu
+  if [[ $editor_name -eq "Q" ]]; then
+    return
+  fi
 
   # Choosing the configuration name
   config_name=
@@ -53,7 +56,8 @@ function select_editor_menu() {
         break
         ;;
       "Q"|"q")
-        return
+        editor_name="Q"
+        break
         ;;
 
       *) 

@@ -1,6 +1,7 @@
 SHEBANG := \#! /usr/bin/env bash
 
-build: init_file header main_menu action_execute action_list action_new action_remove action_debug editor_configuration footer
+build: init_file header main_menu action_execute action_list action_new \
+	action_install action_remove action_debug editor_configuration footer
 init_file:
 	echo "$(SHEBANG)" > ./viver
 header:
@@ -13,7 +14,7 @@ action_list:
 	cat ./src/action_list.sh | sed '/^\s*#/d' >> ./viver
 action_new:
 	cat ./src/action_new.sh | sed '/^\s*#/d' >> ./viver
-action_new:
+action_install:
 	cat ./src/action_install.sh | sed '/^\s*#/d' >> ./viver
 action_remove:
 	cat ./src/action_remove.sh | sed '/^\s*#/d' >> ./viver
